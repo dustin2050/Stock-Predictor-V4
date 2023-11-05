@@ -374,7 +374,7 @@ def train_model():
     epochs = 20
     batch_size = 128
     best_reward = None
-    best_model_path = "model.h5"
+    best_model_path = "model.keras"
     min_reward_threshold = float(input("Enter the minimum reward threshold (e.g., 0.7): "))
 
     def optimize_model(units, filters, kernel_size, learning_rate):
@@ -436,7 +436,7 @@ def train_model():
     # Load the best model and evaluate it
     model = create_model(int(best_params['units']), int(best_params['filters']), int(best_params['kernel_size']), best_params['learning_rate'])
     model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1)
-    model.save("model.h5")
+    model.save("model.keras")
 
     y_pred_test = model.predict(X_test)
     test_reward = get_reward(y_test, y_pred_test)
@@ -529,16 +529,17 @@ def evaluate_model():
         return np.array(X), np.array(y)
 
     # Load model
-    model = load_model("model.h5")
+    model = load_model("model.keras")
 
     # Evaluate model
     rmse_scores = []
     mape_scores = []
     rewards = []
     for i in range(10):
-        model = load_model("model.h5")
+        model = load_model("model.keras")
         print(f"Evaluating model {i+1}/10")
         X_test, y_test = create_sequences(test_data_norm, timesteps)
+        print(X_test.shape)        
         y_pred = model.predict(X_test)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         mape = mean_absolute_percentage_error(y_test, y_pred)
@@ -546,7 +547,7 @@ def evaluate_model():
         mape_scores.append(mape)
         if mape < 0.05:
             rewards.append(1 - mape)
-            model.save("model.h5")
+            model.save("model.keras")
         else:
             rewards.append(0.3 - mape)
 
@@ -671,7 +672,7 @@ def fine_tune_model():
     X_test, y_test = create_sequences(test_data_norm, timesteps)
 
     # Load model
-    model = load_model("model.h5")
+    model = load_model("model.keras")
     model.summary()
 
     # Define reward threshold
@@ -696,7 +697,7 @@ def fine_tune_model():
         )
 
         if user_input.lower() == "yes":
-            model.save("model.h5")
+            model.save("model.keras")
 
             # Plot results
             fig, axs = plt.subplots(4, 1, figsize=(10, 10))
@@ -734,7 +735,7 @@ def fine_tune_model():
 
     while True:
         # Load model
-        model = load_model("model.h5")
+        model = load_model("model.keras")
         print("\nEvaluating Model")
         # Evaluate model
         y_pred = model.predict(X_test)
@@ -760,7 +761,7 @@ def fine_tune_model():
         # Check if reward threshold is reached
         if len(rewards) >= 1 and sum(rewards[-1:]) >= reward_threshold:
             print("Reward threshold reached!")
-            model.save("model.h5")
+            model.save("model.keras")
 
             # Plot results
             fig, axs = plt.subplots(4, 1, figsize=(10, 10))
@@ -779,7 +780,7 @@ def fine_tune_model():
         else:
             # Set up callbacks
             checkpoint = ModelCheckpoint(
-                "model.h5", save_best_only=True, verbose=1, mode="min"
+                "model.keras", save_best_only=True, verbose=1, mode="min"
             )
             earlystop = EarlyStopping(monitor="val_loss", patience=5, verbose=1)
 
@@ -852,7 +853,7 @@ def predict_future_data():
     X_data = create_sequences(data_norm, timesteps)
 
     # Load model
-    model = load_model("model.h5")
+    model = load_model("model.keras")
     model.summary()
 
     num_predictions = 30
