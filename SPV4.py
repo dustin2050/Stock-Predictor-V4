@@ -181,6 +181,7 @@ def prepare_data():
         [
             df["Date"],
             df["Close"],
+            df["Open"],
             df["Adj Close"],
             df["Volume"],
             df["High"],
@@ -296,6 +297,7 @@ def train_model():
         data[
             [
                 "Close",
+                "Open",
                 "Adj Close",
                 "Volume",
                 "High",
