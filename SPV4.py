@@ -75,7 +75,7 @@ def install_dependencies():
             "pandas",
             "numpy",
             "scikit-learn",
-            "tensorflow-cpu",
+            "tensorflow",
             "matplotlib",
             "ta-lib",
             "bayesian-optimization",
