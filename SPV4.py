@@ -474,6 +474,7 @@ def evaluate_model():
         train_data[
             [
                 "Close",
+                "Open",
                 "Adj Close",
                 "Volume",
                 "High",
