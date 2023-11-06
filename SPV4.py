@@ -498,6 +498,7 @@ def evaluate_model():
         test_data[
             [
                 "Close",
+                "Open",
                 "Adj Close",
                 "Volume",
                 "High",
@@ -614,6 +615,7 @@ def fine_tune_model():
         train_data[
             [
                 "Close",
+                "Open",
                 "Adj Close",
                 "Volume",
                 "High",
@@ -637,6 +639,7 @@ def fine_tune_model():
         test_data[
             [
                 "Close",
+                "Open",
                 "Adj Close",
                 "Volume",
                 "High",
@@ -821,6 +824,7 @@ def predict_future_data():
         data[
             [
                 "Close",
+                "Open",
                 "Adj Close",
                 "Volume",
                 "High",
