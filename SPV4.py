@@ -758,9 +758,9 @@ def predict_future_data():
     model = load_model("model.keras")
     model.summary()
 
-    num_predictions = 30
+    num_predictions = 120
 
-    # Make predictions for next num_predictions days
+    # Make predictions for next num_predictions Minutes
     X_pred = X_data[-num_predictions:].reshape(
         (num_predictions, timesteps, X_data.shape[2])
     )
@@ -779,9 +779,21 @@ def predict_future_data():
     # Generate date index for predictions
     last_date = data["Date"].iloc[-1]
     index = pd.date_range(
-        last_date, periods=num_predictions, freq="D", tz="UTC"
+        last_date, periods=num_predictions, freq="T", tz="UTC"
     ).tz_localize(None)
 
+    # Calculate % change
+    y_pred_pct_change = (y_pred - y_pred[0]) / y_pred[0] * 100
+
+    # Save predictions and % change in a CSV file
+    predictions = pd.DataFrame(
+        {"Date": index, "Predicted Close": y_pred, "% Change": y_pred_pct_change}
+    )
+    predictions.to_csv("predictions.csv", index=False)
+
+    print(predictions)
+
+"""
     # Calculate % change
     y_pred_pct_change = (y_pred - y_pred[0]) / y_pred[0] * 100
 
@@ -849,7 +861,7 @@ def predict_future_data():
 
     # Show plot
     plt.show()
-
+"""
 
 def compare_predictions():
     print("Comparing the predictions with the actual data...")
