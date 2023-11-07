@@ -587,17 +587,17 @@ def fine_tune_model():
     print("TensorFlow version:", tf.__version__)
 
     def get_reward(y_true, y_pred):
-    mape = mean_absolute_percentage_error(y_true, y_pred)
-    r2 = r2_score(y_true, y_pred)
-    reward = (((1 - mape) * 0.1) + (r2 * 1.9)) / 2
-    return reward
+      mape = mean_absolute_percentage_error(y_true, y_pred)
+      r2 = r2_score(y_true, y_pred)
+      reward = (((1 - mape) * 0.1) + (r2 * 1.9)) / 2
+      return reward
 
     def create_sequences(data, timesteps):
-    X, y = [], []
-    for i in range(timesteps, len(data)):
+      X, y = [], []
+      for i in range(timesteps, len(data)):
         X.append(data[i - timesteps: i])
         y.append(data[i, 0])
-    return np.array(X), np.array(y)
+      return np.array(X), np.array(y)
 
     # Load data
     data = pd.read_csv("data.csv")
