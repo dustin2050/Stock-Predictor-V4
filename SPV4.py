@@ -151,7 +151,20 @@ def prepare_data():
     # Preprocess the selected CSV file
     df = pd.read_csv(selected_file_path)
 
-    df["SMA"] = talib.SMA(df["Close"], timeperiod=14)
+
+    # Stelle sicher, dass alle Werte in den relevanten Spalten numerisch sind
+    columns_to_check = ['Close', 'Open', 'High', 'Low']
+    for column in columns_to_check:
+      df[column] = pd.to_numeric(df[column], errors='coerce')
+
+    # Exportiere die DataFrame in eine neue CSV-Datei mit einer Mindestanzahl von Dezimalstellen
+    df.to_csv(selected_file_path, index=False, float_format='%.6f')
+
+    # CSV Datei neu einlesen
+    df = pd.read_csv(selected_file_path)
+
+
+    df["SMA"] = talib.SMA(df["Close"], timeperiod=14).round(decimals=5)
     df["RSI"] = talib.RSI(df["Close"], timeperiod=14)
     df["MACD"], _, _ = talib.MACD(
         df["Close"], fastperiod=12, slowperiod=26, signalperiod=9
@@ -170,6 +183,8 @@ def prepare_data():
     df["in_uptrend"] = df["Close"] > df["lower_band_supertrend"]
     df["supertrend_signal"] = df["in_uptrend"].diff().fillna(0)
 
+    df["ROC"] = talib.ROC(df["Close"], timeperiod=14)
+
     # Replace "False" with 0 and "True" with 1
     df = df.replace({False: 0, True: 1})
 
@@ -182,8 +197,8 @@ def prepare_data():
             df["Date"],
             df["Close"],
             df["Open"],
-            df["Adj Close"],
-            df["Volume"],
+            #df["Adj Close"],
+            #df["Volume"],
             df["High"],
             df["Low"],
             df["SMA"],
@@ -196,14 +211,16 @@ def prepare_data():
             df["aroon_up"],
             df["aroon_down"],
             df["kicking"],
+            df["ATR"],
             df["upper_band_supertrend"],
             df["lower_band_supertrend"],
+            df["ROC"],
         ],
         axis=1,
     )
 
     # Save the DataFrame to a new CSV file with indicators
-    df2.to_csv("data.csv", index=False)
+    df2.to_csv("data.csv", index=False, float_format='%.6f')
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
 
@@ -298,8 +315,8 @@ def train_model():
             [
                 "Close",
                 "Open",
-                "Adj Close",
-                "Volume",
+                #"Adj Close",
+                #"Volume",
                 "High",
                 "Low",
                 "SMA",
@@ -314,6 +331,7 @@ def train_model():
                 "kicking",
                 "upper_band_supertrend",
                 "lower_band_supertrend",
+                "ROC",
             ]
         ]
     )
@@ -323,7 +341,7 @@ def train_model():
     test_data_norm = data_norm[int(0.8 * len(data)) :]
 
     # Define time steps
-    timesteps = 100
+    timesteps = 48
 
     # Create sequences of timesteps
     def create_sequences(data, timesteps):
@@ -371,8 +389,8 @@ def train_model():
     from bayes_opt import BayesianOptimization
 
     # Define RL training loop
-    epochs = 20
-    batch_size = 128
+    epochs = 5
+    batch_size = 256
     best_reward = None
     best_model_path = "model.keras"
     min_reward_threshold = float(input("Enter the minimum reward threshold (e.g., 0.7): "))
@@ -475,8 +493,8 @@ def evaluate_model():
             [
                 "Close",
                 "Open",
-                "Adj Close",
-                "Volume",
+               # "Adj Close",
+               # "Volume",
                 "High",
                 "Low",
                 "SMA",
@@ -491,6 +509,7 @@ def evaluate_model():
                 "kicking",
                 "upper_band_supertrend",
                 "lower_band_supertrend",
+                "ROC",
             ]
         ]
     )
@@ -499,8 +518,8 @@ def evaluate_model():
             [
                 "Close",
                 "Open",
-                "Adj Close",
-                "Volume",
+                #"Adj Close",
+                #"Volume",
                 "High",
                 "Low",
                 "SMA",
@@ -515,12 +534,13 @@ def evaluate_model():
                 "kicking",
                 "upper_band_supertrend",
                 "lower_band_supertrend",
+                "ROC",
             ]
         ]
     )
 
     # Define time steps
-    timesteps = 100
+    timesteps = 48
 
     def create_sequences(data, timesteps):
         X = []
@@ -614,8 +634,8 @@ def fine_tune_model():
     feature_columns = [
                 "Close",
                 "Open",
-                "Adj Close",
-                "Volume",
+                #"Adj Close",
+                #"Volume",
                 "High",
                 "Low",
                 "SMA",
@@ -630,6 +650,7 @@ def fine_tune_model():
                 "kicking",
                 "upper_band_supertrend",
                 "lower_band_supertrend",
+                "ROC",
     ]
 
     # Normalize data
@@ -641,7 +662,7 @@ def fine_tune_model():
     test_data_norm = scaler.transform(test_data[feature_columns])
 
     # Define time steps
-    timesteps = 100
+    timesteps = 48
     X_train, y_train = create_sequences(train_data_norm, timesteps)
     X_validation, y_validation = create_sequences(validation_data_norm, timesteps)
     X_test, y_test = create_sequences(test_data_norm, timesteps)
@@ -722,8 +743,8 @@ def predict_future_data():
             [
                 "Close",
                 "Open",
-                "Adj Close",
-                "Volume",
+               # "Adj Close",
+               # "Volume",
                 "High",
                 "Low",
                 "SMA",
@@ -738,12 +759,13 @@ def predict_future_data():
                 "kicking",
                 "upper_band_supertrend",
                 "lower_band_supertrend",
+                "ROC",
             ]
         ]
     )
 
     # Define time steps
-    timesteps = 100
+    timesteps = 48
 
     # Create sequences of timesteps
     def create_sequences(data, timesteps):
@@ -758,7 +780,7 @@ def predict_future_data():
     model = load_model("model.keras")
     model.summary()
 
-    num_predictions = 120
+    num_predictions = 500
 
     # Make predictions for next num_predictions Minutes
     X_pred = X_data[-num_predictions:].reshape(
@@ -779,7 +801,7 @@ def predict_future_data():
     # Generate date index for predictions
     last_date = data["Date"].iloc[-1]
     index = pd.date_range(
-        last_date, periods=num_predictions, freq="T", tz="UTC"
+        last_date, periods=num_predictions, freq="H", tz="UTC"
     ).tz_localize(None)
 
     # Calculate % change
